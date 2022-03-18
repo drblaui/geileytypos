@@ -44,8 +44,10 @@ class Tweeter:
 		errors = self.checker.unknown(tweet_text)
 		false_positives = 0
 		for error in errors:
-			if (error == self.checker.correction(error)) or self.containsEmoji(error):
+			if (error == self.checker.correction(error)) or self.containsEmoji(error) or self.containsNumber(error):
 				false_positives += 1
+			else:
+				print(error)
 		return (len(errors) - false_positives) != 0
 
 	def containsEmoji(self, text):
@@ -53,7 +55,10 @@ class Tweeter:
 			if emoji.is_emoji(word):
 				return True
 		return False
-	
+
+	def containsNumber(self, text):
+		return any(char.isdigit() for char in text)
+ 
 	def search_timeline(self):
 		latest = self.getLatestRetweet()
 		timeline = self.api.get_user(screen_name=self.target).timeline()
@@ -61,8 +66,7 @@ class Tweeter:
 			if tweet.id == latest.retweeted_status.id:
 				break
 			if self.containsError(tweet):
-				#tweet.retweet()
-				pass
+				tweet.retweet()
 
 
 this = Tweeter(os.getenv("API_KEY"), os.getenv("API_SECRET"), os.getenv("ACCESS_TOKEN"), os.getenv("ACCESS_SECRET"))
