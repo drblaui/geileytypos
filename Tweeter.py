@@ -1,4 +1,4 @@
-import tweepy, os
+import tweepy, os, emoji
 from spellchecker import SpellChecker
 from dotenv import load_dotenv
 load_dotenv()
@@ -11,7 +11,7 @@ class Tweeter:
 		# Can be changed to any other users
 		self.own = "geileytypos"
 		self.target = "bendover1312"
-		self.checker = SpellChecker(case_sensitive=False)
+		self.checker = SpellChecker(language='de',case_sensitive=False)
   
 	def tweet(self, text):
 		self.api.update_status(text)
@@ -42,8 +42,18 @@ class Tweeter:
 			tweet_text = tweet_text.replace(name, "")
 		tweet_text = tweet_text.strip().split(" ")
 		errors = self.checker.unknown(tweet_text)
-		return len(errors) != 0
+		false_positives = 0
+		for error in errors:
+			if (error == self.checker.correction(error)) or self.containsEmoji(error):
+				false_positives += 1
+		return (len(errors) - false_positives) != 0
 
+	def containsEmoji(self, text):
+		for word in text:
+			if emoji.is_emoji(word):
+				return True
+		return False
+	
 	def search_timeline(self):
 		latest = self.getLatestRetweet()
 		timeline = self.api.get_user(screen_name=self.target).timeline()
@@ -51,7 +61,8 @@ class Tweeter:
 			if tweet.id == latest.retweeted_status.id:
 				break
 			if self.containsError(tweet):
-				tweet.retweet()
+				#tweet.retweet()
+				pass
 
 
 this = Tweeter(os.getenv("API_KEY"), os.getenv("API_SECRET"), os.getenv("ACCESS_TOKEN"), os.getenv("ACCESS_SECRET"))
