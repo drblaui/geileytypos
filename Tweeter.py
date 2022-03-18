@@ -8,6 +8,7 @@ class Tweeter:
 		auth = tweepy.OAuthHandler(api_key, api_secret)
 		auth.set_access_token(access_token, access_secret)
 		self.api = tweepy.API(auth)
+		# Can be changed to any other users
 		self.own = "geileytypos"
 		self.target = "bendover1312"
 		self.checker = SpellChecker(case_sensitive=False)
@@ -15,10 +16,9 @@ class Tweeter:
 	def tweet(self, text):
 		self.api.update_status(text)
   
-	def retweet(self, target):
-		target.retweet()
-
 	def getLatestRetweet(self):
+		"""Returns the latest retweet of the account under self.own, is used for only searching part of the timeline
+		"""
 		me = self.api.get_user(screen_name=self.own)
 		timeline = me.timeline()
 		for tweet in timeline:
@@ -27,6 +27,14 @@ class Tweeter:
 		return None
 	
 	def containsError(self, tweet):
+		"""Filters out all mentions and retweet hints and runs the spellchecker
+
+		Args:
+			tweet: The tweet object
+
+		Returns:
+			boolean: indicates error
+		"""
 		mentions = tweet.entities['user_mentions']
 		display_names = ['@' + mention['screen_name'] for mention in mentions]
 		tweet_text = tweet.text.replace("RT", "").replace(":","")
